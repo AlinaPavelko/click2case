@@ -40,50 +40,22 @@ export const CasePreview: React.FC<CasePreviewProps> = ({
     generatedAt: new Date().toLocaleDateString()
   };
 
-  const sections = [
-    { id: "overview", title: "1. Overview", content: caseStudy.overview },
-    { id: "problem", title: "2. Problem", content: caseStudy.problem },
-    { id: "goal", title: "3. Goal", content: caseStudy.goal },
-    { id: "my-role", title: "4. My Role", content: caseStudy.myRole },
-    { id: "process", title: "5. Process", content: caseStudy.process },
-    { id: "decisions", title: "6. Key Design Decisions", content: caseStudy.keyDesignDecisions },
-    { id: "outcome", title: "7. Outcome", content: caseStudy.outcome },
-    { id: "learnings", title: "8. Key Learnings", content: caseStudy.keyLearnings }
-  ];
+  const sections = (caseStudy.sections || []).map((sec, idx) => ({
+    id: `sec-${idx}-${sec.type || "section"}`,
+    title: sec.heading || `Section ${idx + 1}`,
+    content: sec.content,
+    type: sec.type
+  }));
 
   const fullMarkdownText = `# ${caseStudy.title}
-
-*${caseStudy.summary}*
-
+${caseStudy.summary ? `\n*${caseStudy.summary}*\n` : ""}
 **Company/Product:** ${meta.productCompany}
 **Role:** ${meta.role}
 **Duration:** ${meta.duration}
 
 ---
 
-## 1. Overview
-${caseStudy.overview}
-
-## 2. Problem
-${caseStudy.problem}
-
-## 3. Goal
-${caseStudy.goal}
-
-## 4. My Role
-${caseStudy.myRole}
-
-## 5. Process
-${caseStudy.process}
-
-## 6. Key Design Decisions
-${caseStudy.keyDesignDecisions}
-
-## 7. Outcome
-${caseStudy.outcome}
-
-## 8. Key Learnings
-${caseStudy.keyLearnings}
+${sections.map((sec) => `## ${sec.title}\n${sec.content}`).join("\n\n")}
 `;
 
   const handleCopyMarkdown = () => {
@@ -216,9 +188,11 @@ ${caseStudy.keyLearnings}
                 {caseStudy.title}
               </h1>
 
-              <p className="text-lg text-zinc-600 font-sans leading-relaxed">
-                {caseStudy.summary}
-              </p>
+              {caseStudy.summary && (
+                <p className="text-lg text-zinc-600 font-sans leading-relaxed">
+                  {caseStudy.summary}
+                </p>
+              )}
 
               {/* Metadata Pill Bar */}
               <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-zinc-600">

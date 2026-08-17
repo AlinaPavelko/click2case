@@ -11,17 +11,25 @@ export interface CaseStudyInput {
   outcome: string;
 }
 
+export type SectionType =
+  | "overview"
+  | "context_challenge"
+  | "my_role"
+  | "approach_decisions"
+  | "solution"
+  | "outcome"
+  | "learnings";
+
+export interface CaseStudySection {
+  type: SectionType | string;
+  heading: string;
+  content: string;
+}
+
 export interface GeneratedCaseStudy {
   title: string;
-  summary: string;
-  overview: string;
-  problem: string;
-  goal: string;
-  myRole: string;
-  process: string;
-  keyDesignDecisions: string;
-  outcome: string;
-  keyLearnings: string;
+  summary?: string;
+  sections: CaseStudySection[];
   metadata: {
     projectName: string;
     productCompany: string;

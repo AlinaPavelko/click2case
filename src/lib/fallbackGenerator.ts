@@ -1,4 +1,4 @@
-import { CaseStudyInput, GeneratedCaseStudy } from "../types";
+import { CaseStudyInput, GeneratedCaseStudy, CaseStudySection } from "../types";
 
 export function generateFallbackCaseStudy(input: CaseStudyInput): GeneratedCaseStudy {
   const pName = input.projectName.trim() || "Untitled Project";
@@ -13,65 +13,69 @@ export function generateFallbackCaseStudy(input: CaseStudyInput): GeneratedCaseS
   const hasDecisions = Boolean(input.keyDecisions.trim());
   const hasOutcome = Boolean(input.outcome.trim());
 
-  const title = `${pName}`;
-  const summary = hasProblem
-    ? `A comprehensive UX initiative for ${company} focused on addressing user friction: "${truncate(input.problem, 120)}".`
-    : `A Product Design initiative for ${company} delivered by ${role}.`;
+  const sections: CaseStudySection[] = [];
 
-  const overview = `This case study highlights the end-to-end design process for **${pName}** at **${company}**, led by **${role}** over **${duration}**. ${
-    hasProblem ? input.problem.trim() : "The project focused on enhancing user experience and streamlining workflow efficiency."
-  }`;
+  // Overview
+  sections.push({
+    type: "overview",
+    heading: "Overview",
+    content: `End-to-end UX initiative for ${pName} at ${company}, delivered by ${role} over ${duration}.`
+  });
 
-  const problemSection = hasProblem
-    ? cleanText(input.problem)
-    : "The core challenge was identified through initial user observations and product feedback, requiring targeted UX interventions to improve core workflow efficiency.";
-
-  const goalSection = hasGoal
-    ? cleanText(input.projectGoal)
-    : "The primary objective was to design an intuitive, high-usability experience that solves key user pain points while aligning with business goals.";
-
-  const roleSection = `As **${role}**, responsibilities spanned the primary product design lifecycle:
-- Synthesizing user requirements and project constraints
-- Mapping user workflows and structural information architecture
-- Iterating on low-to-high fidelity visual UI components
-- Partnering with cross-functional team members to execute design deliverables`;
-
-  // Process section combines what I worked on and research
-  let processSection = "";
-  if (hasWorkedOn || hasResearch) {
-    if (hasResearch) {
-      processSection += `### Discovery & Research\n${cleanText(input.research)}\n\n`;
-    }
-    if (hasWorkedOn) {
-      processSection += `### Design & Execution\n${cleanText(input.whatIWorkedOn)}`;
-    }
-  } else {
-    processSection = "The design process followed an iterative user-centered approach: Discovery & Framing -> Ideation & Architecture -> Prototyping -> Review & Refinement.";
+  // Problem & Context
+  if (hasProblem || hasGoal) {
+    let content = "";
+    if (hasProblem) content += input.problem.trim();
+    if (hasGoal) content += (content ? "\n\n" : "") + `Goal: ${input.projectGoal.trim()}`;
+    sections.push({
+      type: "context_challenge",
+      heading: "Problem & Context",
+      content
+    });
   }
 
-  const decisionsSection = hasDecisions
-    ? cleanText(input.keyDecisions)
-    : "Key design choices focused on reducing cognitive friction, clarifying visual hierarchy, and ensuring seamless navigation patterns across primary user tasks.";
+  // My Role
+  if (role) {
+    sections.push({
+      type: "my_role",
+      heading: "My Role",
+      content: `Role: ${role}. Key responsibilities included user research synthesis, information architecture, workflow mapping, interaction design, and high-fidelity UI specifications.`
+    });
+  }
 
-  const outcomeSection = hasOutcome
-    ? cleanText(input.outcome)
-    : "The resulting design assets were delivered to production standards, establishing a cohesive foundation for improved user satisfaction and future iterations.";
+  // Approach & Decisions
+  if (hasResearch || hasDecisions) {
+    let content = "";
+    if (hasResearch) content += `Research & Discovery:\n${input.research.trim()}\n\n`;
+    if (hasDecisions) content += `Key Design Decisions:\n${input.keyDecisions.trim()}`;
+    sections.push({
+      type: "approach_decisions",
+      heading: "Approach & Decisions",
+      content: content.trim()
+    });
+  }
 
-  const keyLearnings = `1. **Focus on Core User Pain Points:** Grounding every decision in clear user feedback provided alignment across stakeholder discussions.
-2. **Iterative Design Refinement:** Rapid low-fidelity exploration helped validate complex interaction patterns early in the timeline.
-3. **Cross-functional Alignment:** Close collaboration between design and development ensured seamless translation from concept to finished product.`;
+  // Solution
+  if (hasWorkedOn) {
+    sections.push({
+      type: "solution",
+      heading: "Solution",
+      content: input.whatIWorkedOn.trim()
+    });
+  }
+
+  // Outcome
+  if (hasOutcome) {
+    sections.push({
+      type: "outcome",
+      heading: "Outcome",
+      content: input.outcome.trim()
+    });
+  }
 
   return {
-    title,
-    summary,
-    overview,
-    problem: problemSection,
-    goal: goalSection,
-    myRole: roleSection,
-    process: processSection,
-    keyDesignDecisions: decisionsSection,
-    outcome: outcomeSection,
-    keyLearnings,
+    title: pName,
+    sections,
     metadata: {
       projectName: pName,
       productCompany: company,
@@ -84,14 +88,4 @@ export function generateFallbackCaseStudy(input: CaseStudyInput): GeneratedCaseS
       })
     }
   };
-}
-
-function truncate(str: string, len: number): string {
-  const trimmed = str.trim();
-  if (trimmed.length <= len) return trimmed;
-  return trimmed.slice(0, len) + "...";
-}
-
-function cleanText(str: string): string {
-  return str.trim();
 }
